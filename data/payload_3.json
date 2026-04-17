@@ -1,0 +1,13 @@
+{
+    "Device": "Arista",
+    "Model": "X-Video",
+    "NIC": [
+        {
+            "Description": "Linksys ABR",
+            "MAC": "14:91:82:3C:D6:7D",
+            "Timestamp": "2020-03-23T18:25:44.511Z",
+            "Rx": "3699949500",
+            "Tx": "123105675"
+        }
+    ]
+}

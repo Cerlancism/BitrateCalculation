@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BitrateCalculation": {
+      "commandName": "Project",
+      "workingDirectory": "$(MSBuildProjectDirectory)"
+    }
+  }
+}
