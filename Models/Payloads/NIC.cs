@@ -25,8 +25,8 @@ public class NIC
     public long Tx { get; set; }
 
     [JsonIgnore]
-    public double RxBits => Rx * BitrateCalculator.DataUnitSize;
+    public double RxBits => Rx * BitrateCalculator.BitsPerOctet;
 
     [JsonIgnore]
-    public double TxBits => Tx * BitrateCalculator.DataUnitSize;
+    public double TxBits => Tx * BitrateCalculator.BitsPerOctet;
 }

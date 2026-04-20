@@ -11,6 +11,6 @@ public class BitrateResult
     public double RxBitsPerSecond { get; set; }
     public double TxBitsPerSecond { get; set; }
 
-    public double RxBits => RxOctets * BitrateCalculator.DataUnitSize;
-    public double TxBits => TxOctets * BitrateCalculator.DataUnitSize;
+    public double RxBits => RxOctets * BitrateCalculator.BitsPerOctet;
+    public double TxBits => TxOctets * BitrateCalculator.BitsPerOctet;
 }

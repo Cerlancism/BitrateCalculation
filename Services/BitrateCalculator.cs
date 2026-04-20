@@ -8,7 +8,8 @@ public class BitrateCalculator(double pollingRateHz)
     /// <summary>
     /// For octet is consist of 8 bits
     /// </summary>
-    public const int DataUnitSize = 8;
+    public const int BitsPerOctet = 8;
+    public const long DefaultWrapValue = long.MaxValue;
     private readonly double pollIntervalSeconds = 1.0 / pollingRateHz;
 
     private static string Format(double value, string unit) => value switch
@@ -23,7 +24,24 @@ public class BitrateCalculator(double pollingRateHz)
 
     public static string FormatBits(double bits) => Format(bits, "b");
 
-    public IEnumerable<BitrateResult> Calculate(IEnumerable<NIC> previousItems, IEnumerable<NIC> currentItems)
+    public static long CalculateOctetDelta(long current, long previous, long wrapValue)
+    {
+        if (current >= previous)
+        {
+            return current - previous;
+        }
+
+        // Counter wrapped, add extra 1 for cross the 0
+        return wrapValue - previous + current + 1;
+    }
+
+    public static double CalculateBitrate(long currentOctets, long previousOctets, double deltaSeconds, long wrapValue)
+    {
+        var deltaOctets = CalculateOctetDelta(currentOctets, previousOctets, wrapValue);
+        return deltaOctets * BitsPerOctet / deltaSeconds;
+    }
+
+    public IEnumerable<BitrateResult> Calculate(IEnumerable<NIC> previousItems, IEnumerable<NIC> currentItems, long wrapValue = DefaultWrapValue)
     {
         var currentByMac = currentItems.ToDictionary(n => n.MAC);
 
@@ -42,21 +60,15 @@ public class BitrateCalculator(double pollingRateHz)
                 deltaSeconds = pollIntervalSeconds;
             }
 
-            // If current < previous, assume the device reset its counter and treat current as the estimated delta since reset.
-            var rxDelta = current.Rx < previous.Rx ? current.Rx : current.Rx - previous.Rx;
-            var txDelta = current.Tx < previous.Tx ? current.Tx : current.Tx - previous.Tx;
-
-            var output = new BitrateResult
+            yield return new BitrateResult
             {
                 NicDescription = current.Description,
                 Timestamp = current.Timestamp,
                 RxOctets = current.Rx,
                 TxOctets = current.Tx,
-                RxBitsPerSecond = rxDelta * DataUnitSize / deltaSeconds,
-                TxBitsPerSecond = txDelta * DataUnitSize / deltaSeconds,
+                RxBitsPerSecond = CalculateBitrate(current.Rx, previous.Rx, deltaSeconds, wrapValue),
+                TxBitsPerSecond = CalculateBitrate(current.Tx, previous.Tx, deltaSeconds, wrapValue),
             };
-
-            yield return output;
         }
     }
 }
